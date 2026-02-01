@@ -84,10 +84,13 @@ program
   .option('--base-path <path>', 'base path for routes (e.g. /mcp-app)', '')
   .action(async (options) => {
     try {
-      const port = parseInt(options.port, 10);
+      const portArg = parseInt(options.port, 10);
+      // Render/Heroku set PORT; use it so we bind to the right port and 0.0.0.0
+      const port = process.env.PORT ? parseInt(process.env.PORT, 10) : (isNaN(portArg) ? 3100 : portArg);
+      const host = process.env.PORT ? '0.0.0.0' : options.host;
       await startHostServer({
-        port: isNaN(port) ? 3100 : port,
-        host: options.host,
+        port,
+        host,
         basePath: options.basePath || undefined,
       });
     } catch (error) {
