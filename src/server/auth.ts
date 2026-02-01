@@ -80,13 +80,16 @@ export function requireAuth(
     go();
     return;
   }
-  // Allow unauthenticated initialize so "add tool" / connection check passes. Auth required once they enable and use the tool.
-  const isFirstInitialize =
+  // Allow unauthenticated MCP handshake + tools/list so "add tool" connection check passes (initialize → initialized → tools/list).
+  // Auth required when they enable and actually use a tool (e.g. tools/call).
+  const method = req.body?.method;
+  const allowUnauth =
     req.method === 'POST' &&
     req.path === '/mcp' &&
-    req.body?.method === 'initialize' &&
-    !req.headers['mcp-session-id'];
-  if (isFirstInitialize) {
+    (method === 'initialize' ||
+      method === 'notifications/initialized' ||
+      method === 'tools/list');
+  if (allowUnauth) {
     go();
     return;
   }
