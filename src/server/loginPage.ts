@@ -9,7 +9,7 @@ export function getLoginPage(basePath: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payments MCP – Sign in</title>
+  <title>Payments MCP – Add your information</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -91,8 +91,8 @@ export function getLoginPage(basePath: string): string {
 </head>
 <body>
   <div class="card">
-    <h1>Payments MCP</h1>
-    <p class="subtitle">Sign in to use the MCP server over HTTP/SSE.</p>
+    <h1>Add your information</h1>
+    <p class="subtitle">Add your API key and optional client credentials to use the Payments MCP server.</p>
     <form method="post" action="${action}">
       <label for="apiKey">API Key (or access token)</label>
       <input type="password" id="apiKey" name="apiKey" placeholder="Your API key or token" autocomplete="off" />
@@ -100,9 +100,9 @@ export function getLoginPage(basePath: string): string {
       <input type="text" id="clientId" name="clientId" placeholder="Optional client ID" autocomplete="off" />
       <label for="clientSecret">Client Secret (optional)</label>
       <input type="password" id="clientSecret" name="clientSecret" placeholder="Optional client secret" autocomplete="off" />
-      <button type="submit">Sign in</button>
+      <button type="submit">Continue</button>
     </form>
-    <p class="hint">Your credentials are stored in this browser session only and are used to authorize MCP requests.</p>
+    <p class="hint">Your information is stored in this browser session only and is used to authorize MCP requests.</p>
   </div>
 </body>
 </html>`;
@@ -116,7 +116,7 @@ export function getSuccessPage(
   const tokenBlock =
     bearerToken &&
     `
-    <p class="success">Use this token in your MCP client (e.g. as Bearer token or in the URL):</p>
+    <p class="success">Paste this token in your MCP client when it asks for auth (e.g. Bearer token or API key field):</p>
     <code id="token">${bearerToken}</code>
     <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('token').textContent)">Copy token</button>
   `;
@@ -180,7 +180,7 @@ export function getSuccessPage(
     <p class="success">Connect your MCP client to:</p>
     <code>${mcpUrl}</code>
     ${tokenBlock || ''}
-    <p class="hint">Use this URL in your MCP client.${bearerToken ? ' Set Authorization: Bearer &lt;token&gt; with the token above if the client asks for auth.' : ' Your browser session is used for auth.'}</p>
+    <p class="hint">Use the MCP URL above in your client.${bearerToken ? ' When the client asks for auth, paste the token above (Bearer token or API key).' : ' Your browser session is used for auth.'}</p>
   </div>
 </body>
 </html>`;

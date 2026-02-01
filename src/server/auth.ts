@@ -54,14 +54,15 @@ export function validateBearerToken(token: string): SessionAuth | undefined {
 }
 
 /**
- * Middleware: require that the user has logged in (session.auth or valid Bearer token).
- * If not, respond with 401 and HTML that shows the login page.
+ * Middleware: require auth for MCP except the first initialize (so "add tool" connection check passes).
+ * Once they enable the tool and use it, we require auth and return loginUrl so they can add their information.
  */
 export function requireAuth(
   req: Request,
   res: Response,
   next: NextFunction,
-  loginHtml: string
+  loginHtml: string,
+  loginPageUrl: string = '/'
 ): void {
   const go = () => next();
   const authHeader = req.headers.authorization;
@@ -77,6 +78,36 @@ export function requireAuth(
   if (req.session?.auth) {
     (req as Request & { auth?: SessionAuth }).auth = req.session.auth;
     go();
+    return;
+  }
+  // Allow unauthenticated initialize so "add tool" / connection check passes. Auth required once they enable and use the tool.
+  const isFirstInitialize =
+    req.method === 'POST' &&
+    req.path === '/mcp' &&
+    req.body?.method === 'initialize' &&
+    !req.headers['mcp-session-id'];
+  if (isFirstInitialize) {
+    go();
+    return;
+  }
+  const loginUrl = `${req.protocol}://${req.get('host') ?? req.hostname}${loginPageUrl}`;
+  // When user enables the tool and hits /mcp (e.g. in browser or client opens URL), redirect to login page
+  if (req.method === 'GET' && req.path === '/mcp') {
+    res.redirect(302, loginPageUrl);
+    return;
+  }
+  // MCP client POST (API): return 401 JSON with loginUrl so client can open "add your information" page
+  const wantsJson =
+    req.path === '/mcp' ||
+    req.headers.accept?.includes('application/json') ||
+    req.headers['content-type']?.includes('application/json');
+  if (wantsJson) {
+    res.status(401).json({
+      error: 'Unauthorized',
+      message:
+        'Add your information first: open the link below in your browser to sign in, then use the Bearer token from the success page in your MCP client.',
+      loginUrl,
+    });
     return;
   }
   res.status(401).setHeader('Content-Type', 'text/html').send(loginHtml);

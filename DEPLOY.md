@@ -40,7 +40,15 @@ This repo ([Sara3/payments-mcp](https://github.com/Sara3/payments-mcp)) runs the
 
    | Key | Value | Type |
    |-----|--------|------|
-   | `MCP_SESSION_SECRET` | A long random string (e.g. from `openssl rand -hex 32`) | **Secret** |
+   | `MCP_SESSION_SECRET` | A long random string (see below) | **Secret** |
+
+   **Where do I get `MCP_SESSION_SECRET`?** You don’t get it from anywhere — you **generate** it. It’s used to sign session cookies. Generate one with:
+
+   ```bash
+   openssl rand -hex 32
+   ```
+
+   Copy the output (e.g. `a61435beb32e9ac8...`) and paste it as the value for `MCP_SESSION_SECRET` in Render. Choose **Secret** so it’s hidden.
 
    - Render sets `PORT` automatically; no need to add it.  
    - Click **Add** then **Save**.
@@ -77,6 +85,26 @@ This repo includes a `render.yaml` that defines the Web Service.
 Use HTTPS (not HTTP) in your MCP client.
 
 ---
+
+## "Connection failed: Unauthorized" or 401 / 500
+
+The MCP endpoint (`/mcp`) requires authentication. You must sign in **before** connecting your MCP client:
+
+1. **Open the login URL in a browser**  
+   e.g. `https://your-service.onrender.com` (not `/mcp`).
+
+2. **Sign in** with your API key (and optional client ID/secret). Submit the form.
+
+3. **Copy the Bearer token** from the success page (the long string shown after “Use this token…”).
+
+4. **Configure your MCP client** to send that token when connecting to `/mcp`:
+   - If your client has an “Auth” or “Headers” setting, add: **Authorization: Bearer \<paste-token\>**.
+   - Or use the client’s “Bearer token” / “API key” field if it has one for this server.
+
+5. **Connect to the MCP URL**  
+   e.g. `https://your-service.onrender.com/mcp`. The client will send the token and the connection should succeed.
+
+If you connect to `/mcp` without logging in or without the Bearer token, the server returns 401 Unauthorized (some clients show this as “500 Unauthorized”).
 
 ## Notes
 

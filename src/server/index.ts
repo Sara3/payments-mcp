@@ -61,8 +61,9 @@ export async function startHostServer(options: HostServerOptions = {}): Promise<
   app.use(getSessionMiddleware());
 
   const loginHtml = getLoginPage(basePath);
+  const loginPagePath = basePath ? `${basePath}/` : '/';
   const requireAuthMiddleware = (req: Request, res: Response, next: NextFunction) =>
-    requireAuth(req, res, next, loginHtml);
+    requireAuth(req, res, next, loginHtml, loginPagePath);
 
   // Login page: when user visits the server URL they see this
   app.get('/', (_req: Request, res: Response) => {
