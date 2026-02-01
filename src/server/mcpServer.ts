@@ -36,21 +36,23 @@ export function createPaymentsMcpServer(): InstanceType<typeof McpServerClass> {
     },
     async (_args: Record<string, unknown>, extra: { auth?: SessionAuth }) => {
       const auth = extra?.auth;
-      if (!auth) {
+      const connected = auth?.accessToken || auth?.email;
+      if (!auth || !connected) {
         return {
           content: [
             {
               type: 'text',
-              text: 'Not connected to Coinbase. Open the MCP server URL in a browser and sign in with your Coinbase username and password.',
+              text: 'Not connected to Coinbase. Open the MCP server URL in a browser and click "Sign in with Coinbase" (or use email/password).',
             },
           ],
         };
       }
+      const method = auth.accessToken ? 'OAuth' : 'email/password';
       return {
         content: [
           {
             type: 'text',
-            text: `Connected to Coinbase. Session age: ${Math.round((Date.now() - auth.loggedAt) / 1000)}s.`,
+            text: `Connected to Coinbase (${method}). Session age: ${Math.round((Date.now() - auth.loggedAt) / 1000)}s.`,
           },
         ],
       };

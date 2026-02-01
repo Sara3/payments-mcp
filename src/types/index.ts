@@ -76,9 +76,13 @@ export interface ConfigGenerationOptions {
 
 /** Auth info stored in session after login on the hosted HTTP/SSE server */
 export interface SessionAuth {
-  /** Coinbase account email or username */
+  /** Coinbase OAuth2 access token (set after Sign in with Coinbase) */
+  accessToken?: string;
+  /** Coinbase OAuth2 refresh token */
+  refreshToken?: string;
+  /** Coinbase account email (from OAuth user info or form) */
   email?: string;
-  /** Coinbase account password (use only in session; prefer OAuth in production) */
+  /** Legacy: password (only when OAuth not used) */
   password?: string;
   apiKey?: string;
   clientId?: string;

@@ -1,12 +1,14 @@
 /**
  * Hosted MCP server over HTTP/SSE with login page.
- * When users enable the MCP server via URL, they get a login page to add auth; then MCP runs over Streamable HTTP.
+ * When users enable the MCP server via URL, they get a login page; Sign in with Coinbase (OAuth2) validates credentials.
  */
 
 import { randomUUID } from 'crypto';
+import crypto from 'crypto';
 import cookieParser from 'cookie-parser';
 import type { Request, Response, NextFunction } from 'express';
 import path from 'path';
+import axios from 'axios';
 // Resolve SDK CJS files; package is ESM-first so we load by direct path from dist/server
 const sdkServerPath = path.join(__dirname, '..', '..', 'node_modules', '@modelcontextprotocol', 'sdk', 'dist', 'cjs', 'server');
 const sdkTypesPath = path.join(__dirname, '..', '..', 'node_modules', '@modelcontextprotocol', 'sdk', 'dist', 'cjs', 'types.js');
@@ -29,6 +31,9 @@ import type { SessionAuth } from '../types';
 
 const MCP_PATH = '/mcp';
 const SUCCESS_PATH = '/success';
+const COINBASE_AUTH_URL = 'https://login.coinbase.com/oauth2/auth';
+const COINBASE_TOKEN_URL = 'https://login.coinbase.com/oauth2/token';
+const COINBASE_SCOPES = 'wallet:accounts:read,wallet:user:read,wallet:user:email,offline_access';
 
 export interface HostServerOptions {
   port?: number;
@@ -74,7 +79,88 @@ export async function startHostServer(options: HostServerOptions = {}): Promise<
     res.setHeader('Content-Type', 'text/html').send(loginHtml);
   });
 
-  // Auth: accept Coinbase username/email and password
+  const clientId = process.env.COINBASE_CLIENT_ID;
+  const clientSecret = process.env.COINBASE_CLIENT_SECRET;
+
+  // Sign in with Coinbase (OAuth2): redirect to Coinbase login page
+  app.get('/auth/coinbase', (req: Request, res: Response) => {
+    if (!clientId) {
+      res.status(500).setHeader('Content-Type', 'text/html').send(
+        getLoginPage(basePath).replace(
+          '</form>',
+          '<p class="error">OAuth not configured: set COINBASE_CLIENT_ID and COINBASE_CLIENT_SECRET. Use the form below to connect (no Coinbase validation).</p></form>'
+        )
+      );
+      return;
+    }
+    const state = crypto.randomBytes(16).toString('hex');
+    req.session!.oauthState = state;
+    const redirectUri = `${req.protocol}://${req.get('host') ?? `localhost:${port}`}${basePath}/auth/callback`;
+    const authUrl = new URL(COINBASE_AUTH_URL);
+    authUrl.searchParams.set('client_id', clientId);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', COINBASE_SCOPES);
+    authUrl.searchParams.set('state', state);
+    res.redirect(302, authUrl.toString());
+  });
+
+  // OAuth2 callback: exchange code for tokens, store, redirect to success
+  app.get('/auth/callback', async (req: Request, res: Response) => {
+    const { code, state, error } = req.query as { code?: string; state?: string; error?: string };
+    if (error || !code) {
+      res.redirect(basePath || '/');
+      return;
+    }
+    const savedState = req.session?.oauthState;
+    if (!savedState || state !== savedState) {
+      res.redirect(basePath || '/');
+      return;
+    }
+    (req.session as { oauthState?: string }).oauthState = undefined;
+    const redirectUri = `${req.protocol}://${req.get('host') ?? `localhost:${port}`}${basePath}/auth/callback`;
+    try {
+      const tokenRes = await axios.post<{
+        access_token: string;
+        refresh_token?: string;
+        expires_in?: number;
+        scope?: string;
+      }>(
+        COINBASE_TOKEN_URL,
+        new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          client_id: clientId!,
+          client_secret: clientSecret!,
+          redirect_uri: redirectUri,
+        }).toString(),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      );
+      const { access_token, refresh_token } = tokenRes.data;
+      const auth: SessionAuth = {
+        accessToken: access_token,
+        refreshToken: refresh_token,
+        loggedAt: Date.now(),
+      };
+      req.session!.auth = auth;
+      const bearerToken = createBearerToken(auth);
+      const mcpUrl = `${req.protocol}://${req.get('host') ?? `localhost:${port}`}${basePath}${MCP_PATH}`;
+      const successHtml = getSuccessPage(basePath, mcpUrl, bearerToken);
+      res.setHeader('Content-Type', 'text/html').send(successHtml);
+    } catch (err) {
+      const message = axios.isAxiosError(err) && err.response?.data
+        ? JSON.stringify(err.response.data)
+        : (err as Error).message;
+      res.status(500).setHeader('Content-Type', 'text/html').send(
+        getLoginPage(basePath).replace(
+          '</form>',
+          `<p class="error">Coinbase sign-in failed: ${message}</p></form>`
+        )
+      );
+    }
+  });
+
+  // Fallback: accept email/password when OAuth not configured (no Coinbase validation)
   app.post('/auth/login', (req: Request, res: Response) => {
     const email = (req.body?.email ?? req.body?.username ?? '').trim();
     const password = (req.body?.password ?? '').trim();
@@ -93,7 +179,6 @@ export async function startHostServer(options: HostServerOptions = {}): Promise<
     };
     req.session!.auth = auth;
     const bearerToken = createBearerToken(auth);
-    const successUrl = basePath ? `${basePath}${SUCCESS_PATH}` : SUCCESS_PATH;
     const mcpUrl = `${req.protocol}://${req.get('host') ?? `localhost:${port}`}${basePath}${MCP_PATH}`;
     const successHtml = getSuccessPage(basePath, mcpUrl, bearerToken);
     res.setHeader('Content-Type', 'text/html').send(successHtml);

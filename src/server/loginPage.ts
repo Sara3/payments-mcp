@@ -4,6 +4,7 @@
 
 export function getLoginPage(basePath: string): string {
   const action = basePath ? `${basePath}/auth/login` : '/auth/login';
+  const coinbaseAuthPath = basePath ? `${basePath}/auth/coinbase` : '/auth/coinbase';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,15 +93,17 @@ export function getLoginPage(basePath: string): string {
 <body>
   <div class="card">
     <h1>Sign in to Coinbase</h1>
-    <p class="subtitle">Enter your Coinbase account credentials to connect Payments MCP.</p>
+    <p class="subtitle">Connect your Coinbase account to use Payments MCP. You will sign in on Coinbase's website.</p>
+    <a href="${coinbaseAuthPath}" style="display:block;width:100%;padding:0.75rem 1rem;font-size:1rem;font-weight:500;color:#fff;background:#0052FF;border:none;border-radius:8px;cursor:pointer;text-decoration:none;text-align:center;margin-bottom:1rem;">Sign in with Coinbase</a>
+    <p class="hint" style="margin-bottom:1rem;">Or use email/password below (fallback; no Coinbase validation):</p>
     <form method="post" action="${action}">
       <label for="email">Email or username</label>
       <input type="text" id="email" name="email" placeholder="Your Coinbase email or username" autocomplete="username" />
       <label for="password">Password</label>
       <input type="password" id="password" name="password" placeholder="Your Coinbase password" autocomplete="current-password" />
-      <button type="submit">Sign in to Coinbase</button>
+      <button type="submit">Continue with email/password</button>
     </form>
-    <p class="hint">Your credentials are used to connect to your Coinbase account. They are stored in this session only.</p>
+    <p class="hint">Sign in with Coinbase uses OAuth; your password is never sent to this server.</p>
   </div>
 </body>
 </html>`;

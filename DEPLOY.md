@@ -50,6 +50,15 @@ This repo ([Sara3/payments-mcp](https://github.com/Sara3/payments-mcp)) runs the
 
    Copy the output (e.g. `a61435beb32e9ac8...`) and paste it as the value for `MCP_SESSION_SECRET` in Render. Choose **Secret** so it’s hidden.
 
+   **Sign in with Coinbase (OAuth):** To validate users with their Coinbase account, add:
+
+   | Key | Value | Type |
+   |-----|--------|------|
+   | `COINBASE_CLIENT_ID` | Your Coinbase OAuth app Client ID | **Secret** or plain |
+   | `COINBASE_CLIENT_SECRET` | Your Coinbase OAuth app Client Secret | **Secret** |
+
+   Create an OAuth app at [Coinbase Developer Portal](https://www.coinbase.com/settings/api) (or [CDP](https://portal.cdp.coinbase.com/)) and set the **redirect URI** to your deployed URL + `/auth/callback`, e.g. `https://payments-mcp.onrender.com/auth/callback`. If you omit these, users can still use the email/password fallback (no Coinbase validation).
+
    - Render sets `PORT` automatically; no need to add it.  
    - Click **Add** then **Save**.
 

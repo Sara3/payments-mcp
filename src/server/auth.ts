@@ -12,6 +12,7 @@ import type { SessionAuth } from '../types';
 declare module 'express-session' {
   interface SessionData {
     auth?: SessionAuth;
+    oauthState?: string;
   }
 }
 
