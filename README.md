@@ -6,6 +6,15 @@ It enables AI agents to autonomously discover and pay for services without API k
 
 Read the [documentation](https://docs.cdp.coinbase.com/payments-mcp/welcome)
 
+---
+
+**This fork ([Sara3/payments-mcp](https://github.com/Sara3/payments-mcp))** adds:
+
+- **HTTP/SSE hosting** – Run the MCP server over HTTP with a login page; connect from any MCP client via URL.
+- **Deploy to Render** – One-click style deploy using the included `render.yaml`; see [DEPLOY.md](DEPLOY.md).
+
+**Clone:** `git clone https://github.com/Sara3/payments-mcp.git`
+
 ## Quick Start
 
 ### 1) Install payments-mcp:
@@ -73,9 +82,47 @@ npx @coinbase/payments-mcp status
 # Uninstall payments-mcp
 npx @coinbase/payments-mcp uninstall
 
+# Run the MCP server over HTTP/SSE with a login page (see "HTTP/SSE hosting" below)
+npx @coinbase/payments-mcp host
+
 # Enable verbose logging for any command
 npx @coinbase/payments-mcp install --verbose
 ```
+
+### HTTP/SSE hosting
+
+You can run payments-mcp as an HTTP/SSE server so clients connect over the network. When a user enables the MCP server via its URL, they get a **login page** where they can add their auth information (API key, optional client ID/secret). After signing in, the MCP endpoint is available over Streamable HTTP/SSE.
+
+1. **Start the host server:**
+
+   ```bash
+   npx @coinbase/payments-mcp host
+   # Or with options:
+   npx @coinbase/payments-mcp host --port 3100 --host 127.0.0.1
+   ```
+
+2. **Open the server URL in a browser** (e.g. `http://127.0.0.1:3100`). You’ll see the login page.
+
+3. **Sign in** with your API key and optionally client ID/secret. After login you’ll see a success page with:
+   - The MCP endpoint URL (e.g. `http://127.0.0.1:3100/mcp`) to use in your MCP client.
+   - A **Bearer token** you can use if your client supports `Authorization: Bearer <token>`.
+
+4. **Configure your MCP client** to use the MCP URL. If the client supports HTTP/SSE (Streamable HTTP), set the server URL to `http://127.0.0.1:3100/mcp`. If it asks for auth, use the Bearer token from the success page.
+
+**Host options:**
+
+- `-p, --port <port>`: Port to listen on (default: 3100).
+- `--host <host>`: Host to bind to (default: 127.0.0.1).
+- `--base-path <path>`: Base path for routes (e.g. `/mcp-app`).
+
+**Environment:**
+
+- `PORT`: Port to listen on (used by Render, Heroku, etc.; overrides default).
+- `MCP_HOST_PORT`: Default port if `--port` / `PORT` is not set.
+- `MCP_HOST_HOST`: Default host if `--host` is not set (e.g. `0.0.0.0` when `PORT` is set).
+- `MCP_SESSION_SECRET`: Secret for session cookies (set in production).
+
+**Deploy to Render:** See [Deploying to Render](DEPLOY.md) for forking and deploying the host server to Render.
 
 ### Options
 
@@ -138,6 +185,12 @@ npx @coinbase/payments-mcp install --verbose
 2. View detailed logs with `--verbose` flag
 
 3. For additional support, visit: [GitHub Issues](https://github.com/coinbase/payments-mcp/issues)
+
+## Repository (this fork)
+
+- **GitHub:** [https://github.com/Sara3/payments-mcp](https://github.com/Sara3/payments-mcp)
+- **Clone:** `git clone https://github.com/Sara3/payments-mcp.git`
+- **Deploy to Render:** See [DEPLOY.md](DEPLOY.md)
 
 ## Security
 

@@ -1,0 +1,16 @@
+# Render Blueprint: deploy the MCP host server as a Web Service
+# Repo: https://github.com/Sara3/payments-mcp
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: payments-mcp-host
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Optional: set a secret for session cookies (recommended in production)
+      # - key: MCP_SESSION_SECRET
+      #   sync: false

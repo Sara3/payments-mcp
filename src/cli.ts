@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { PaymentsMCPInstaller } from './installer';
 import { Logger } from './utils/logger';
+import { startHostServer } from './server';
 
 const program = new Command();
 
@@ -76,6 +77,26 @@ program
   });
 
 program
+  .command('host')
+  .description('Run the MCP server over HTTP/SSE with a login page (users add auth when they enable the server)')
+  .option('-p, --port <port>', 'port to listen on', '3100')
+  .option('--host <host>', 'host to bind to', '127.0.0.1')
+  .option('--base-path <path>', 'base path for routes (e.g. /mcp-app)', '')
+  .action(async (options) => {
+    try {
+      const port = parseInt(options.port, 10);
+      await startHostServer({
+        port: isNaN(port) ? 3100 : port,
+        host: options.host,
+        basePath: options.basePath || undefined,
+      });
+    } catch (error) {
+      console.error('Host server failed:', error);
+      process.exit(1);
+    }
+  });
+
+program
   .action(async (options) => {
     const logger = new Logger(options.verbose);
     const installer = new PaymentsMCPInstaller(logger);
@@ -117,6 +138,8 @@ program.on('--help', () => {
   console.log('  $ npx @coinbase/payments-mcp status');
   console.log('  $ npx @coinbase/payments-mcp status --client <client>');
   console.log('  $ npx @coinbase/payments-mcp uninstall');
+  console.log('  $ npx @coinbase/payments-mcp host');
+  console.log('  $ npx @coinbase/payments-mcp host --port 3100');
   console.log('  $ npx @coinbase/payments-mcp --verbose');
   console.log('');
   console.log('Supported MCP clients:');

@@ -73,3 +73,11 @@ export interface ConfigGenerationOptions {
   installPath: string;
   mcpClient: MCPClient;
 }
+
+/** Auth info stored in session after login on the hosted HTTP/SSE server */
+export interface SessionAuth {
+  apiKey?: string;
+  clientId?: string;
+  clientSecret?: string;
+  loggedAt: number;
+}
