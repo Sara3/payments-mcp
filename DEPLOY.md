@@ -88,12 +88,12 @@ Use HTTPS (not HTTP) in your MCP client.
 
 ## "Connection failed: Unauthorized" or 401 / 500
 
-The MCP endpoint (`/mcp`) requires authentication. You must sign in **before** connecting your MCP client:
+The MCP endpoint (`/mcp`) requires authentication. When you **enable** the tool, sign in with your **Coinbase account** (username and password):
 
 1. **Open the login URL in a browser**  
    e.g. `https://your-service.onrender.com` (not `/mcp`).
 
-2. **Sign in** with your API key (and optional client ID/secret). Submit the form.
+2. **Sign in to Coinbase** – enter your Coinbase email/username and password. Click "Sign in to Coinbase".
 
 3. **Copy the Bearer token** from the success page (the long string shown after “Use this token…”).
 

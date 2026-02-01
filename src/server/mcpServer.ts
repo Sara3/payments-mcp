@@ -41,18 +41,16 @@ export function createPaymentsMcpServer(): InstanceType<typeof McpServerClass> {
           content: [
             {
               type: 'text',
-              text: 'Not authenticated. Open the MCP server URL in a browser and sign in.',
+              text: 'Not connected to Coinbase. Open the MCP server URL in a browser and sign in with your Coinbase username and password.',
             },
           ],
         };
       }
-      const hasApiKey = !!auth.apiKey;
-      const hasClient = !!(auth.clientId || auth.clientSecret);
       return {
         content: [
           {
             type: 'text',
-            text: `Authenticated. API key: ${hasApiKey ? 'set' : 'not set'}. Client ID/Secret: ${hasClient ? 'set' : 'not set'}. Session age: ${Math.round((Date.now() - auth.loggedAt) / 1000)}s.`,
+            text: `Connected to Coinbase. Session age: ${Math.round((Date.now() - auth.loggedAt) / 1000)}s.`,
           },
         ],
       };

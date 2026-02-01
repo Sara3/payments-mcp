@@ -74,23 +74,21 @@ export async function startHostServer(options: HostServerOptions = {}): Promise<
     res.setHeader('Content-Type', 'text/html').send(loginHtml);
   });
 
-  // Auth: accept API key and optional client ID/secret
+  // Auth: accept Coinbase username/email and password
   app.post('/auth/login', (req: Request, res: Response) => {
-    const apiKey = (req.body?.apiKey ?? req.body?.api_key ?? '').trim();
-    const clientId = (req.body?.clientId ?? req.body?.client_id ?? '').trim();
-    const clientSecret = (req.body?.clientSecret ?? req.body?.client_secret ?? '').trim();
-    if (!apiKey && !clientId && !clientSecret) {
+    const email = (req.body?.email ?? req.body?.username ?? '').trim();
+    const password = (req.body?.password ?? '').trim();
+    if (!email || !password) {
       const errorHtml = getLoginPage(basePath).replace(
         '</form>',
-        '<p class="error">Please provide at least an API key or client credentials.</p></form>'
+        '<p class="error">Please enter your Coinbase email/username and password.</p></form>'
       );
       res.status(400).setHeader('Content-Type', 'text/html').send(errorHtml);
       return;
     }
     const auth: SessionAuth = {
-      apiKey: apiKey || undefined,
-      clientId: clientId || undefined,
-      clientSecret: clientSecret || undefined,
+      email: email || undefined,
+      password: password || undefined,
       loggedAt: Date.now(),
     };
     req.session!.auth = auth;

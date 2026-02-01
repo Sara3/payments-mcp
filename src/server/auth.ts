@@ -108,7 +108,7 @@ export function requireAuth(
     res.status(401).json({
       error: 'Unauthorized',
       message:
-        'Add your information first: open the link below in your browser to sign in, then use the Bearer token from the success page in your MCP client.',
+        'Sign in to your Coinbase account: open the link below and enter your Coinbase username and password. After signing in, paste the Bearer token from the success page into your MCP client if it asks for auth.',
       loginUrl,
     });
     return;

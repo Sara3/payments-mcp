@@ -9,7 +9,7 @@ export function getLoginPage(basePath: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payments MCP – Add your information</title>
+  <title>Sign in to Coinbase – Payments MCP</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -91,18 +91,16 @@ export function getLoginPage(basePath: string): string {
 </head>
 <body>
   <div class="card">
-    <h1>Add your information</h1>
-    <p class="subtitle">Add your API key and optional client credentials to use the Payments MCP server.</p>
+    <h1>Sign in to Coinbase</h1>
+    <p class="subtitle">Enter your Coinbase account credentials to connect Payments MCP.</p>
     <form method="post" action="${action}">
-      <label for="apiKey">API Key (or access token)</label>
-      <input type="password" id="apiKey" name="apiKey" placeholder="Your API key or token" autocomplete="off" />
-      <label for="clientId">Client ID (optional)</label>
-      <input type="text" id="clientId" name="clientId" placeholder="Optional client ID" autocomplete="off" />
-      <label for="clientSecret">Client Secret (optional)</label>
-      <input type="password" id="clientSecret" name="clientSecret" placeholder="Optional client secret" autocomplete="off" />
-      <button type="submit">Continue</button>
+      <label for="email">Email or username</label>
+      <input type="text" id="email" name="email" placeholder="Your Coinbase email or username" autocomplete="username" />
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Your Coinbase password" autocomplete="current-password" />
+      <button type="submit">Sign in to Coinbase</button>
     </form>
-    <p class="hint">Your information is stored in this browser session only and is used to authorize MCP requests.</p>
+    <p class="hint">Your credentials are used to connect to your Coinbase account. They are stored in this session only.</p>
   </div>
 </body>
 </html>`;
@@ -116,7 +114,7 @@ export function getSuccessPage(
   const tokenBlock =
     bearerToken &&
     `
-    <p class="success">Paste this token in your MCP client when it asks for auth (e.g. Bearer token or API key field):</p>
+    <p class="success">Paste this token in your MCP client when it asks for auth (Bearer token or API key):</p>
     <code id="token">${bearerToken}</code>
     <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('token').textContent)">Copy token</button>
   `;
@@ -125,7 +123,7 @@ export function getSuccessPage(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payments MCP – Signed in</title>
+  <title>Connected to Coinbase – Payments MCP</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -175,12 +173,12 @@ export function getSuccessPage(
 </head>
 <body>
   <div class="card">
-    <h1>You're signed in</h1>
-    <p class="subtitle">Payments MCP is ready to use over HTTP/SSE.</p>
-    <p class="success">Connect your MCP client to:</p>
+    <h1>You're connected to Coinbase</h1>
+    <p class="subtitle">Payments MCP is now connected to your Coinbase account.</p>
+    <p class="success">MCP endpoint:</p>
     <code>${mcpUrl}</code>
     ${tokenBlock || ''}
-    <p class="hint">Use the MCP URL above in your client.${bearerToken ? ' When the client asks for auth, paste the token above (Bearer token or API key).' : ' Your browser session is used for auth.'}</p>
+    <p class="hint">You can close this tab.${bearerToken ? ' If your MCP client asks for auth, paste the token above (Bearer token or API key).' : ' Your browser session is used for auth.'}</p>
   </div>
 </body>
 </html>`;
