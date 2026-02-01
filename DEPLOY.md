@@ -7,6 +7,22 @@ This repo ([Sara3/payments-mcp](https://github.com/Sara3/payments-mcp)) runs the
 
 ---
 
+## Do it (checklist)
+
+1. **Deploy the app to Render** (Option A below). Note your service URL, e.g. `https://payments-mcp.onrender.com`.
+2. **Create a Coinbase OAuth app**  
+   Go to [Coinbase API settings](https://www.coinbase.com/settings/api) → create an OAuth2 app (or use [CDP Portal](https://portal.cdp.coinbase.com/)). Copy the **Client ID** and **Client Secret**.
+3. **Set the redirect URI** in the Coinbase app to:  
+   `https://YOUR-SERVICE-NAME.onrender.com/auth/callback`  
+   (use your real Render URL, e.g. `https://payments-mcp.onrender.com/auth/callback`).
+4. **In Render** → your service → **Environment** → add:
+   - `MCP_SESSION_SECRET` = run `openssl rand -hex 32` and paste the result (Secret).
+   - `COINBASE_CLIENT_ID` = paste Client ID from step 2.
+   - `COINBASE_CLIENT_SECRET` = paste Client Secret from step 2 (Secret).
+5. **Save** and let Render **redeploy**. After deploy, open your service URL → "Sign in with Coinbase" will send users to Coinbase to log in with their username and password.
+
+---
+
 ## Deploy to Render (this fork)
 
 ### Option A: Connect repo and create Web Service (recommended)
